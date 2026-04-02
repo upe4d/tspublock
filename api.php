@@ -16,6 +16,11 @@ switch($action){
   case 'export':doExport();break;
   default:http_response_code(400);echo json_encode(['error'=>'Unknown action']);
 }
+function getCyberokIps():array{
+    $f='/etc/cyberok_ips.txt';
+    if(!file_exists($f))return[];
+    return array_filter(array_map(function($ip){ $ip=trim($ip); return str_ends_with($ip,'/32')?substr($ip,0,-3):$ip; }, file($f,FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)));
+}
 function getList():array{
   $raw=shell_exec('sudo ipset list '.IPSET_NAME.' 2>/dev/null');
   if(!$raw)return['error'=>'ipset недоступен','ips'=>[]];
@@ -30,8 +35,9 @@ function getList():array{
       if(preg_match('/^([\d\-]+ [\d:]+)\s+([\d.\/]+)$/',$row,$m))$history[$m[2]]=$m[1];
     }
   }
+  $cyberokIps=getCyberokIps();
   $result=[];
-  foreach($ips as $ip)$result[]=['ip'=>$ip,'added'=>$history[$ip]??null,'is_net'=>str_contains($ip,'/')];
+  foreach($ips as $ip)$result[]=['ip'=>$ip,'added'=>$history[$ip]??null,'is_net'=>str_contains($ip,'//'),'source'=>in_array($ip,$cyberokIps)?'cyberok':'auto'];
   usort($result,function($a,$b){
     if($a['added']&&$b['added'])return $b['added']<=>$a['added'];
     if($a['added'])return -1;if($b['added'])return 1;
