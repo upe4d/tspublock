@@ -33,6 +33,17 @@ ipset save > /etc/ipset.conf && iptables-save > /etc/iptables/rules.v4
 (crontab -l 2>/dev/null; echo "0 3 * * * curl -fsSL https://stats.gptru.pro:4443/rst/update_cyberok.sh | bash >> /var/log/cyberok.log 2>&1") | crontab -
 ```
 
+
+## Отдельные списки
+
+| Файл | Описание |
+|------|----------|
+| [auto_collected.txt](auto_collected.txt) | Автособранные RST IP — только RU, эксперимент, обновляется раз в сутки |
+| Экспорт CyberOK | [iptables](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables&src=cyberok) · [MikroTik](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik&src=cyberok) · [txt](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt&src=cyberok) |
+| Экспорт полный | [iptables](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables) · [MikroTik](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik) · [txt](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt) |
+
+> **Важно:** автосборные IP — экспериментальные. ТСПУ может подменять IP клиента, поэтому точность метода уточняется сообществом.
+
 ## Экспорт списка
 
 | Формат | CyberOK | Полный |
