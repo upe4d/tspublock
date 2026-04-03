@@ -15,6 +15,7 @@ switch($action){
   case 'stats': echo json_encode(getStats(),JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);break;
   case 'export':doExport();break;
   case 'delete':doDelete();break;
+  case 'admincheck':doAdminCheck();break;
   default:http_response_code(400);echo json_encode(['error'=>'Unknown action']);
 }
 function getCyberokIps():array{
@@ -79,14 +80,42 @@ function getStats():array{
   $fb=function(int $b):string{if($b>=1073741824)return round($b/1073741824,2).' GB';if($b>=1048576)return round($b/1048576,2).' MB';if($b>=1024)return round($b/1024,1).' KB';return $b.' B';};
   return['blocked_packets'=>$pkts,'blocked_bytes'=>$bytes,'blocked_bytes_h'=>$fb($bytes),'ip_count'=>$cnt,'last_updated'=>$last,'chain_active'=>(bool)$raw,'updated_at'=>date('d.m.Y H:i:s', time() + 10800)];
 }
+function doAdminCheck():void{
+    header('Content-Type: application/json');
+    $pass = $_GET['pass'] ?? '';
+    $ok = ($pass === 'upe4d_admin_2026');
+    if($ok) session_start();
+    if($ok) $_SESSION['admin'] = true;
+    echo json_encode(['ok'=>$ok]);
+}
+function isAdmin():bool{
+    session_start();
+    return !empty($_SESSION['admin']);
+}
 function doDelete():void{
     header('Content-Type: application/json');
     $ip = $_GET['ip'] ?? '';
     $token = $_GET['token'] ?? '';
-    // Можно удалить только свой IP
-    $myIp = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
-    $myIp = trim(explode(',', $myIp)[0]);
-    if($ip !== $myIp){http_response_code(403);echo json_encode(['error'=>'можно удалить только свой IP','your_ip'=>$myIp]);return;}
+    // Только REMOTE_ADDR — X-Forwarded-For можно подделать
+    $myIp = $_SERVER['REMOTE_ADDR'] ?? '';
+
+    $admin = isAdmin();
+    // Не админ — только свой IP
+    if(!$admin && $ip !== $myIp){
+        http_response_code(403);
+        echo json_encode(['error'=>'можно удалить только свой IP','your_ip'=>$myIp]);
+        return;
+    }
+    // Не админ — только из автосборных, не из CyberOK
+    if(!$admin){
+        $cyberok = array_map(fn($l)=>trim(str_replace('/32','',$l)),
+            file('/etc/cyberok_ips.txt', FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES));
+        if(in_array($ip, $cyberok)){
+            http_response_code(403);
+            echo json_encode(['error'=>'этот IP из проверенного списка CyberOK — нельзя удалить']);
+            return;
+        }
+    }
     if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)){echo json_encode(['error'=>'bad ip']);return;}
     // Удаляем из ipset
     shell_exec('sudo ipset del TSPUIPS '.escapeshellarg($ip).' 2>/dev/null');

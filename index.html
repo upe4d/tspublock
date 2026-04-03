@@ -119,6 +119,12 @@ h1 em{font-style:normal;background:linear-gradient(120deg,var(--red),var(--yello
 /* SKEL */
 .skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%);background-size:200% 100%;animation:sh 1.5s infinite;border-radius:5px;}
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* АДМИН */
+.admin-bar{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.admin-input{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:.75rem;outline:none;width:160px;}
+.admin-input:focus{border-color:var(--accent);}
+.btn-admin{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:7px;padding:6px 12px;font-family:"Unbounded",sans-serif;font-size:.65rem;font-weight:700;cursor:pointer;}
+.admin-status{font-size:.7rem;color:var(--green);}
 /* TOAST */
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:#fff;padding:9px 18px;border-radius:9px;font-size:.74rem;z-index:9999;transition:all .3s;opacity:0;pointer-events:none;}
 footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;border-top:1px solid var(--border);margin-top:36px;}
@@ -154,6 +160,12 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
         <button class="btn btn-blue" onclick="loadIps(true)"><i class="bi bi-arrow-clockwise"></i> Обновить</button>
         <button class="btn btn-green" onclick="copyAll()"><i class="bi bi-copy"></i> Копировать всё</button>
       </div>
+    </div>
+    <!-- Админ панель -->
+    <div class="admin-bar" id="admin-bar">
+      <input class="admin-input" type="password" id="admin-pass" placeholder="Пароль администратора..." onkeydown="if(event.key==='Enter')adminLogin()">
+      <button class="btn-admin" onclick="adminLogin()">Войти</button>
+      <span class="admin-status" id="admin-status"></span>
     </div>
     <div class="search-wrap">
       <input class="search-input" type="text" id="search" placeholder="Поиск по IP или организации..." oninput="filterIps(this.value)">
@@ -376,13 +388,16 @@ function rowHtml(item) {
   const src  = item.source === 'cyberok'
     ? '<span class="badge b-blue">CyberOK</span>'
     : '<span class="badge b-green">RU</span>';
-  return `<div class="ip-row">
-    <span class="ip-addr ${cls}" onclick="showWhois('${item.ip}')" style="cursor:pointer">${item.ip}</span>
-    <span class="ip-org" onclick="showWhois('${item.ip}')" style="cursor:pointer">${org}</span>
-    ${src}
-    <span class="ip-date">${date}</span>
-    <button onclick="deleteIp('${item.ip}',this)" style="margin-left:6px;padding:2px 7px;border-radius:5px;border:1px solid #fca5a5;background:#fee2e2;color:#991b1b;font-size:.6rem;cursor:pointer;flex-shrink:0">✕</button>
-  </div>`;
+  const delBtn = (item.source !== 'cyberok' || adminMode)
+    ? '<button onclick="deleteIp(\'' + item.ip + '\',this)" style="margin-left:4px;padding:2px 7px;border-radius:5px;border:1px solid #fca5a5;background:#fee2e2;color:#991b1b;font-size:.6rem;cursor:pointer">' + (adminMode ? '✕ удалить' : '✕') + '</button>'
+    : '';
+  return '<div class="ip-row">'
+    + '<span class="ip-addr ' + cls + '" onclick="showWhois(\'' + item.ip + '\')" style="cursor:pointer">' + item.ip + '</span>'
+    + '<span class="ip-org" onclick="showWhois(\'' + item.ip + '\')" style="cursor:pointer">' + org + '</span>'
+    + src
+    + '<span class="ip-date">' + date + '</span>'
+    + delBtn
+    + '</div>';
 }
 
 function filterIps(q) {
@@ -441,8 +456,36 @@ function toast(msg) {
   clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(20px)'; }, 2600);
 }
 
+/* ── Админка ── */
+let adminMode = false;
+const ADMIN_HASH = '8e44f72b5a3e4c2d1f9b7c6a0e5d8f3b'; // md5 от пароля
+
+function adminLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  // Простая проверка — отправляем на сервер
+  fetch('api.php?action=admincheck&pass=' + encodeURIComponent(pass))
+    .then(r=>r.json()).then(d=>{
+      if(d.ok) {
+        adminMode = true;
+        document.getElementById('admin-status').textContent = '✓ Режим администратора';
+        document.getElementById('admin-status').style.color = 'var(--green)';
+        document.getElementById('admin-pass').style.display = 'none';
+        document.querySelector('.btn-admin').style.display = 'none';
+        renderIps(allIps);
+        // Перерисовываем оба списка принудительно
+        const ck = allIps.filter(i=>i.source==='cyberok');
+        const au = allIps.filter(i=>i.source!=='cyberok');
+        document.getElementById('ck-list').innerHTML = ck.map(rowHtml).join('');
+        document.getElementById('au-list').innerHTML = au.map(rowHtml).join('');
+      } else {
+        document.getElementById('admin-status').textContent = '✗ Неверный пароль';
+        document.getElementById('admin-status').style.color = 'var(--red)';
+      }
+    }).catch(()=>{});
+}
+
 function deleteIp(ip, btn) {
-  if(!confirm('Удалить ' + ip + ' из базы?')) return;
+  // confirm убран — сервер сам проверяет можно ли удалить
   btn.disabled = true;
   btn.textContent = '...';
   fetch('api.php?action=delete&ip=' + encodeURIComponent(ip) + '&token=upe4d_rst_2026')
