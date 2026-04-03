@@ -46,8 +46,9 @@ ipset save > /etc/ipset.conf && iptables-save > /etc/iptables/rules.v4
 >
 > **Если нашли свой IP в списке** — удалите его через веб-интерфейс: откройте [stats.gptru.pro:4443/rst/](https://stats.gptru.pro:4443/rst/), найдите свой IP через поиск и нажмите кнопку ✕. Или командой на сервере:
 > ```bash
-> curl "https://stats.gptru.pro:4443/rst/api.php?action=delete&ip=ВАШ_IP&token=upe4d_rst_2026"
+> curl "https://stats.gptru.pro:4443/rst/api.php?action=delete&ip=ВАШ_IP"
 > ```
+> Сервер автоматически определяет ваш IP — удалить можно только свой.
 
 ## Экспорт списка
 
