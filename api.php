@@ -83,7 +83,10 @@ function doDelete():void{
     header('Content-Type: application/json');
     $ip = $_GET['ip'] ?? '';
     $token = $_GET['token'] ?? '';
-    if($token !== 'upe4d_rst_2026'){http_response_code(403);echo json_encode(['error'=>'bad token']);return;}
+    // Можно удалить только свой IP
+    $myIp = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+    $myIp = trim(explode(',', $myIp)[0]);
+    if($ip !== $myIp){http_response_code(403);echo json_encode(['error'=>'можно удалить только свой IP','your_ip'=>$myIp]);return;}
     if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)){echo json_encode(['error'=>'bad ip']);return;}
     // Удаляем из ipset
     shell_exec('sudo ipset del TSPUIPS '.escapeshellarg($ip).' 2>/dev/null');
