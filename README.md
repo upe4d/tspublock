@@ -42,7 +42,12 @@ ipset save > /etc/ipset.conf && iptables-save > /etc/iptables/rules.v4
 | Экспорт CyberOK | [iptables](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables&src=cyberok) · [MikroTik](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik&src=cyberok) · [txt](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt&src=cyberok) |
 | Экспорт полный | [iptables](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables) · [MikroTik](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik) · [txt](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt) |
 
-> **Важно:** автосборные IP — экспериментальные. ТСПУ может подменять IP клиента, поэтому точность метода уточняется сообществом.
+> **Важно:** автосборные IP — экспериментальные. ТСПУ может подменять IP клиента, поэтому точность метода уточняется сообществом. Список обновляется раз в 3 дня.
+>
+> **Если нашли свой IP в списке** — удалите его через веб-интерфейс: откройте [stats.gptru.pro:4443/rst/](https://stats.gptru.pro:4443/rst/), найдите свой IP через поиск и нажмите кнопку ✕. Или командой на сервере:
+> ```bash
+> curl "https://stats.gptru.pro:4443/rst/api.php?action=delete&ip=ВАШ_IP&token=upe4d_rst_2026"
+> ```
 
 ## Экспорт списка
 
@@ -67,6 +72,16 @@ curl -fsSL https://stats.gptru.pro:4443/rst/rst_submit.sh | sudo bash -s -- ВА
 /import file=tspuips_mikrotik.rsc
 /ip firewall filter add chain=input protocol=tcp tcp-flags=rst src-address-list=TSPUIPS action=drop
 ```
+
+## Как работает блокировка
+
+Два независимых метода которые дополняют друг друга:
+
+**1. Блокировка по IP (TSPUBLOCK)** — список известных адресов DPI оборудования из CyberOK Skipa + автосбор. Дропаем RST пакеты от этих IP.
+
+**2. Поведенческая блокировка (TSPUBLOCK2)** — дропаем RST которые пришли в течение 5 секунд после SYN. Не требует знать IP ТСПУ — блокирует по поведению. Поймал МегаФон (178.176.73.113) в первые минуты работы.
+
+> Механизм до конца не изучен — ТСПУ может подменять IP клиента. Обсуждение продолжается в [@telemtrs](https://t.me/telemtrs).
 
 ## Состав репозитория
 
