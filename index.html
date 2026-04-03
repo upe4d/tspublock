@@ -243,8 +243,17 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
     <p style="font-size:.65rem;color:var(--muted2);margin-top:6px">Замените <strong style="color:var(--accent)">ВАШ_ПОРТ</strong> на порт вашего прокси (обычно 443).</p>
     <div style="margin-top:9px"><a href="rst_submit.sh" target="_blank" class="btn"><i class="bi bi-file-code"></i> Исходный код скрипта</a></div>
   </div>
-
-</div>
+  <!-- Дополнительные соображения -->
+  <div class="info-card" style="border-left:3px solid #ccc;">
+    <h3><i class="bi bi-chat-square-text" style="color:var(--muted)"></i> Дополнительные соображения</h3>
+    <p>Механизм блокировки RST обсуждается в сообществе. Несколько версий:</p>
+    <p><strong>Версия 1:</strong> ТСПУ шлёт RST со своих реальных IP — блокировка по IP работает.</p>
+    <p><strong>Версия 2:</strong> ТСПУ подменяет IP клиента — тогда мы блокируем случайные адреса. Эффективнее блокировать по TTL пакета.</p>
+    <p><strong>Версия 3:</strong> ТСПУ режет на стороне клиента — тогда блокировка RST на сервере вообще не влияет на handshake timeout.</p>
+    <p><strong>Что знаем точно:</strong> ~8800 handshake timeout в час. Влияет ли блокировка — стата собирается.</p>
+    <p>CyberOK — задокументированные сканеры, блокировать полезно в любом случае. Автосбор — эксперимент. Обсуждение: <a href="https://t.me/telemtrs/1" style="color:var(--accent)">@u_pre</a></p>
+  </div>
+  </div>
 <!-- ПРАВАЯ КОЛОНКА -->
 <div>
 
@@ -307,6 +316,7 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
     <div class="code">/ip firewall filter add chain=input protocol=tcp tcp-flags=rst src-address-list=TSPUIPS action=drop<button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
   </div>
 
+  
   <div class="info-card">
     <h3><i class="bi bi-link-45deg" style="color:var(--muted)"></i> Ссылки</h3>
     <div class="lnk-row"><i class="bi bi-github" style="color:var(--muted)"></i><a href="https://github.com/tread-lightly/CyberOK_Skipa_ips" target="_blank">CyberOK Skipa IPs — база сканеров ТСПУ</a></div>
@@ -315,7 +325,7 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
     <div class="lnk-row"><i class="bi bi-arrow-left" style="color:var(--muted)"></i><a href="https://gptru.pro/dpi/">Назад к инструкции по обходу DPI</a></div>
   </div>
 
-</div>
+  </div>
 </div>
 </div>
 
@@ -366,11 +376,12 @@ function rowHtml(item) {
   const src  = item.source === 'cyberok'
     ? '<span class="badge b-blue">CyberOK</span>'
     : '<span class="badge b-green">RU</span>';
-  return `<div class="ip-row" onclick="showWhois('${item.ip}')">
-    <span class="ip-addr ${cls}">${item.ip}</span>
-    <span class="ip-org">${org}</span>
+  return `<div class="ip-row">
+    <span class="ip-addr ${cls}" onclick="showWhois('${item.ip}')" style="cursor:pointer">${item.ip}</span>
+    <span class="ip-org" onclick="showWhois('${item.ip}')" style="cursor:pointer">${org}</span>
     ${src}
     <span class="ip-date">${date}</span>
+    <button onclick="deleteIp('${item.ip}',this)" style="margin-left:6px;padding:2px 7px;border-radius:5px;border:1px solid #fca5a5;background:#fee2e2;color:#991b1b;font-size:.6rem;cursor:pointer;flex-shrink:0">✕</button>
   </div>`;
 }
 
@@ -430,6 +441,26 @@ function toast(msg) {
   clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(20px)'; }, 2600);
 }
 
+function deleteIp(ip, btn) {
+  if(!confirm('Удалить ' + ip + ' из базы?')) return;
+  btn.disabled = true;
+  btn.textContent = '...';
+  fetch('api.php?action=delete&ip=' + encodeURIComponent(ip) + '&token=upe4d_rst_2026')
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){
+        btn.closest('.ip-row').style.opacity = '0.3';
+        btn.textContent = '✓';
+        toast('Удалён: ' + ip);
+        // Убираем из локального массива
+        allIps = allIps.filter(i => i.ip !== ip);
+        document.getElementById('badge-total').textContent = '(' + allIps.length + ')';
+      } else {
+        btn.textContent = '✕';
+        btn.disabled = false;
+        toast('Ошибка: ' + (d.error||'неизвестно'));
+      }
+    }).catch(()=>{ btn.textContent = '✕'; btn.disabled = false; });
+}
 function err(msg) { return `<div style="padding:14px;text-align:center;color:var(--muted);font-size:.74rem">${msg}</div>`; }
 function fmtNum(n) { return n ? n.toLocaleString('ru-RU') : '—'; }
 function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

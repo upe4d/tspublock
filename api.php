@@ -14,6 +14,7 @@ switch($action){
   case 'whois': echo json_encode(getWhois(),JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);break;
   case 'stats': echo json_encode(getStats(),JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);break;
   case 'export':doExport();break;
+  case 'delete':doDelete();break;
   default:http_response_code(400);echo json_encode(['error'=>'Unknown action']);
 }
 function getCyberokIps():array{
@@ -77,6 +78,27 @@ function getStats():array{
   if(file_exists(ADDED_FILE)){$ls=file(ADDED_FILE,FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);if($ls){$l=end($ls);if(preg_match('/^([\d\-]+ [\d:]+)/',$l,$m))$last=$m[1];}}
   $fb=function(int $b):string{if($b>=1073741824)return round($b/1073741824,2).' GB';if($b>=1048576)return round($b/1048576,2).' MB';if($b>=1024)return round($b/1024,1).' KB';return $b.' B';};
   return['blocked_packets'=>$pkts,'blocked_bytes'=>$bytes,'blocked_bytes_h'=>$fb($bytes),'ip_count'=>$cnt,'last_updated'=>$last,'chain_active'=>(bool)$raw,'updated_at'=>date('d.m.Y H:i:s', time() + 10800)];
+}
+function doDelete():void{
+    header('Content-Type: application/json');
+    $ip = $_GET['ip'] ?? '';
+    $token = $_GET['token'] ?? '';
+    if($token !== 'upe4d_rst_2026'){http_response_code(403);echo json_encode(['error'=>'bad token']);return;}
+    if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)){echo json_encode(['error'=>'bad ip']);return;}
+    // Удаляем из ipset
+    shell_exec('sudo ipset del TSPUIPS '.escapeshellarg($ip).' 2>/dev/null');
+    // Удаляем из логов
+    foreach(['/etc/rst_added.txt','/etc/rst_submitted.txt','/etc/cyberok_added.txt']as $f){
+        if(file_exists($f)){
+            $lines=file($f,FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+            $lines=array_filter($lines,fn($l)=>!str_contains($l,$ip));
+            file_put_contents($f,implode("
+",$lines)."
+");
+        }
+    }
+    shell_exec('sudo ipset save > /etc/ipset.conf');
+    echo json_encode(['ok'=>true,'ip'=>$ip,'msg'=>'IP удалён из базы']);
 }
 function doExport():void{
   $fmt=$_GET['fmt']??'txt';
