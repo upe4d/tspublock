@@ -85,6 +85,7 @@ chmod +x /opt/update_govips.sh
 | [auto_collected.txt](https://github.com/upe4d/tspublock/blob/master/auto_collected.txt) | Автособранные RST IP — только RU, эксперимент, обновляется раз в сутки |
 | Экспорт CyberOK | [iptables](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables&src=cyberok) · [MikroTik](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik&src=cyberok) · [txt](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt&src=cyberok) |
 | Экспорт полный | [iptables](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables) · [MikroTik](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik) · [txt](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt) |
+| GOVIPS (госорганы) | [ipset](https://raw.githubusercontent.com/C24Be/AS_Network_List/main/blacklists_iptables/blacklist-v4.ipset) · [txt](https://raw.githubusercontent.com/C24Be/AS_Network_List/main/blacklists/blacklist-v4.txt) · via [C24Be/AS_Network_List](https://github.com/C24Be/AS_Network_List) |
 
 > **Важно:** автосборные IP — экспериментальные. ТСПУ может подменять IP клиента, поэтому точность метода уточняется сообществом. Список обновляется раз в 3 дня.
 >
@@ -96,12 +97,12 @@ chmod +x /opt/update_govips.sh
 
 ## Экспорт списка
 
-| Формат | CyberOK | Полный |
-|---|---|---|
-| iptables/ipset | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables) |
-| MikroTik .rsc | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik) |
-| Текст .txt | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt) |
-| ipset restore | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=ipset&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=ipset) |
+| Формат | CyberOK | Полный | GOVIPS (госорганы) |
+|---|---|---|---|
+| iptables/ipset | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=iptables) | [скачать](https://raw.githubusercontent.com/C24Be/AS_Network_List/main/blacklists_iptables/blacklist-v4.ipset) |
+| MikroTik .rsc | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=mikrotik) | — |
+| Текст .txt | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=txt) | [скачать](https://raw.githubusercontent.com/C24Be/AS_Network_List/main/blacklists/blacklist-v4.txt) |
+| ipset restore | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=ipset&src=cyberok) | [скачать](https://stats.gptru.pro:4443/rst/api.php?action=export&fmt=ipset) | [скачать](https://raw.githubusercontent.com/C24Be/AS_Network_List/main/blacklists_iptables/blacklist-v4.ipset) |
 
 ## Помочь пополнить базу
 
