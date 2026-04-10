@@ -260,14 +260,14 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
     <div style="margin-top:9px"><a href="rst_submit.sh" target="_blank" class="btn"><i class="bi bi-file-code"></i> Исходный код скрипта</a></div>
   </div>
   <!-- Дополнительные соображения -->
-  <div class="info-card" style="border-left:3px solid #ccc;">
-    <h3><i class="bi bi-chat-square-text" style="color:var(--muted)"></i> Дополнительные соображения</h3>
-    <p>Механизм блокировки RST обсуждается в сообществе. Несколько версий:</p>
-    <p><strong>Версия 1:</strong> ТСПУ шлёт RST со своих реальных IP — блокировка по IP работает.</p>
-    <p><strong>Версия 2:</strong> ТСПУ подменяет IP клиента — тогда мы блокируем случайные адреса. Эффективнее блокировать по TTL пакета.</p>
-    <p><strong>Версия 3:</strong> ТСПУ режет на стороне клиента — тогда блокировка RST на сервере вообще не влияет на handshake timeout.</p>
-    <p><strong>Что знаем точно:</strong> ~8800 handshake timeout в час. Влияет ли блокировка — стата собирается.</p>
-    <p>CyberOK — задокументированные сканеры, блокировать полезно в любом случае. Автосбор — эксперимент. Обсуждение: <a href="https://t.me/telemtrs/1" style="color:var(--accent)">@u_pre</a></p>
+  <div class="info-card" style="border-left:3px solid #22c55e;">
+    <h3><i class="bi bi-check-circle" style="color:#22c55e"></i> Механизм ТСПУ — финальные выводы сообщества <span class="badge b-green">разобрано</span></h3>
+    <p><strong>ТСПУ — прозрачный мост, не маршрутизатор.</strong> Его нет в traceroute, у него нет публичных IP. Оно не шлёт RST "от себя" — оно <em>инжектирует</em> RST в существующую TCP-сессию.</p>
+    <p><strong>Как работает инжект:</strong> ТСПУ берёт заголовок проходящего пакета TCP-сессии, выставляет бит RST, пересчитывает контрольные суммы и отправляет дальше. Все поля включая src/dst IP остаются оригинальными — для получателя выглядит как будто удалённый хост сам оборвал соединение.</p>
+    <p><strong>Что это значит для нашего автосбора:</strong> RST приходит с IP клиента (src IP оригинальный). Дропать такой RST имеет смысл — мы удержим соединение на стороне сервера. Но такой же RST придёт клиенту и он разорвёт соединение со своей стороны. Заносить эти IP в блэклист бессмысленно — это обычные клиенты, не ТСПУ.</p>
+    <p><strong>1 апреля 2026:</strong> наблюдались ретрансмиты (TCP повторная передача), а не RST — возможно ТСПУ просто дропает пакеты без отправки RST. ME Telegram тоже шлют RST — блокировать все RST нельзя.</p>
+    <p><strong>Правильная стратегия:</strong> блокировать RST только от RU-подсетей (список <a href="https://www.ipdeny.com/ipblocks/data/aggregated/ru-aggregated.zone" target="_blank" style="color:var(--accent)">ipdeny.com</a>), разрешив RST от ME Telegram (порт 8888). Дополнительно: уменьшить <code>net.ipv4.tcp_keepalive_time</code> до 600-1800 секунд чтобы залипшие сессии рвались быстрее.</p>
+    <p style="color:var(--muted);font-size:0.85em">Источник: обсуждение в <a href="https://t.me/telemtrs" style="color:var(--accent)">@telemtrs</a>, апрель 2026. Документация ТСПУ: <a href="https://github.com/DanielLavrushin/tspu-docs" target="_blank" style="color:var(--accent)">tspu-docs</a></p>
   </div>
 
   <!-- Анализ автосбора -->
@@ -457,7 +457,7 @@ function renderIps(ips) {
   const auto    = ips.filter(i => i.source !== 'cyberok');
 
   document.getElementById('ck-meta').textContent = cyberok.length + ' IP · раз в сутки';
-  document.getElementById('au-meta').textContent = auto.length + ' IP · раз в сутки';
+  document.getElementById('au-meta').textContent = auto.length + ' IP · сбор остановлен';
 
   document.getElementById('ck-list').innerHTML = cyberok.length
     ? cyberok.map(rowHtml).join('')
