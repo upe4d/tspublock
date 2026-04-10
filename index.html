@@ -198,11 +198,15 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
         <div class="sp-left">
           <span class="badge b-amber">Автосбор</span>
           <span class="sp-title">Экспериментальный · только RU</span>
+          <span class="badge" style="background:#ef4444;color:#fff;margin-left:6px">⏸ Сбор приостановлен</span>
           <span class="sp-meta" id="au-meta">загрузка...</span>
         </div>
         <i class="bi bi-chevron-down sp-chevron" id="au-chev"></i>
       </div>
       <div class="sp-body" id="au-body">
+        <div style="margin:10px 14px;padding:10px 14px;background:#422;border:1px solid #ef4444;border-radius:8px;font-size:0.82em;color:#fca5a5;line-height:1.6">
+          ⚠️ <strong>Автосбор приостановлен.</strong> Данные анализируются — в списке обнаружены адреса из Беларуси, Нидерландов, Финляндии и других стран помимо RU. Методология уточняется. Список не обновляется до завершения анализа.
+        </div>
         <div class="ip-scroll" id="au-list">
           <div style="padding:10px 14px;display:flex;flex-direction:column;gap:7px">
             <div class="skel" style="height:11px;width:45%"></div>
@@ -265,6 +269,89 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
     <p><strong>Что знаем точно:</strong> ~8800 handshake timeout в час. Влияет ли блокировка — стата собирается.</p>
     <p>CyberOK — задокументированные сканеры, блокировать полезно в любом случае. Автосбор — эксперимент. Обсуждение: <a href="https://t.me/telemtrs/1" style="color:var(--accent)">@u_pre</a></p>
   </div>
+
+  <!-- Анализ автосбора -->
+  <div class="info-card" style="border-left:3px solid #ef4444;" id="analysis">
+    <h3><i class="bi bi-bar-chart-line" style="color:#ef4444"></i> Анализ автосбора — результаты и выводы</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4em;font-weight:700;color:var(--text)">1793</div>
+        <div style="font-size:0.72em;color:var(--muted)">IP собрано</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4em;font-weight:700;color:var(--text)">73%</div>
+        <div style="font-size:0.72em;color:var(--muted)">Россия (RU)</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4em;font-weight:700;color:var(--text)">11%</div>
+        <div style="font-size:0.72em;color:var(--muted)">CDN / облака</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4em;font-weight:700;color:var(--text)">16%</div>
+        <div style="font-size:0.72em;color:var(--muted)">Прочие страны</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
+      <div>
+        <div style="font-size:0.72em;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Топ стран</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.78em">
+            <span style="color:var(--muted);width:24px">RU</span>
+            <div style="flex:1;background:var(--bg3);border-radius:2px;height:5px"><div style="width:73%;height:5px;border-radius:2px;background:#378ADD"></div></div>
+            <span style="color:var(--text);width:30px;text-align:right">1315</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.78em">
+            <span style="color:var(--muted);width:24px">US</span>
+            <div style="flex:1;background:var(--bg3);border-radius:2px;height:5px"><div style="width:11%;height:5px;border-radius:2px;background:#378ADD"></div></div>
+            <span style="color:var(--text);width:30px;text-align:right">194</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.78em">
+            <span style="color:var(--muted);width:24px">GB</span>
+            <div style="flex:1;background:var(--bg3);border-radius:2px;height:5px"><div style="width:3%;height:5px;border-radius:2px;background:#378ADD"></div></div>
+            <span style="color:var(--text);width:30px;text-align:right">55</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.78em">
+            <span style="color:var(--muted);width:24px">NL</span>
+            <div style="flex:1;background:var(--bg3);border-radius:2px;height:5px"><div style="width:2.7%;height:5px;border-radius:2px;background:#378ADD"></div></div>
+            <span style="color:var(--text);width:30px;text-align:right">49</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.78em">
+            <span style="color:var(--muted);width:24px">DE</span>
+            <div style="flex:1;background:var(--bg3);border-radius:2px;height:5px"><div style="width:1.8%;height:5px;border-radius:2px;background:#378ADD"></div></div>
+            <span style="color:var(--text);width:30px;text-align:right">33</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.78em">
+            <span style="color:var(--muted);width:24px">Др.</span>
+            <div style="flex:1;background:var(--bg3);border-radius:2px;height:5px"><div style="width:8%;height:5px;border-radius:2px;background:#888780"></div></div>
+            <span style="color:var(--text);width:30px;text-align:right">147</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:0.72em;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Топ провайдеров</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:0.78em">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">МегаФон</span><span style="color:var(--text);font-weight:700">104</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Mobile TeleSystems</span><span style="color:var(--text);font-weight:700">96</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Ростелеком</span><span style="color:var(--text);font-weight:700">96</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Tele2 Russia</span><span style="color:var(--text);font-weight:700">78</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">MTU-Intel (МТС)</span><span style="color:var(--text);font-weight:700">67</span></div>
+          <div style="border-top:1px solid var(--border);margin:4px 0"></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Akamai / Microsoft / Amazon</span><span style="color:#ef4444;font-weight:700">114</span></div>
+          <div style="font-size:0.9em;color:var(--muted)">CDN — вероятно клиенты, не ТСПУ</div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
+      <div style="font-size:0.72em;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Выводы</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:0.82em">
+        <div style="display:flex;gap:8px"><div style="width:6px;height:6px;border-radius:50%;background:#378ADD;flex-shrink:0;margin-top:4px"></div><span style="color:var(--muted);line-height:1.5">Российские операторы (МТС, Tele2, МегаФон, Ростелеком) составляют большинство — вероятные источники RST от ТСПУ-оборудования.</span></div>
+        <div style="display:flex;gap:8px"><div style="width:6px;height:6px;border-radius:50%;background:#ef4444;flex-shrink:0;margin-top:4px"></div><span style="color:var(--muted);line-height:1.5">114 IP — Akamai, Microsoft, Amazon, DigitalOcean. CDN и облака туда RST не шлют — это клиенты чьи IP подменил ТСПУ при атаке.</span></div>
+        <div style="display:flex;gap:8px"><div style="width:6px;height:6px;border-radius:50%;background:#888780;flex-shrink:0;margin-top:4px"></div><span style="color:var(--muted);line-height:1.5">Беларусь, Украина, Европа — вероятно VPN-пользователи или операторы с похожим поведением. Без дополнительных данных отделить их от ТСПУ невозможно.</span></div>
+        <div style="display:flex;gap:8px"><div style="width:6px;height:6px;border-radius:50%;background:#639922;flex-shrink:0;margin-top:4px"></div><span style="color:var(--muted);line-height:1.5">Рекомендация: используйте только <strong>CyberOK</strong> (задокументированные сканеры) и <strong>GOVIPS</strong> (подсети госорганов РФ) — оба списка проверены независимо.</span></div>
+      </div>
+    </div>
+  </div>
+
   </div>
 <!-- ПРАВАЯ КОЛОНКА -->
 <div>
@@ -458,8 +545,25 @@ function toast(msg) {
 
 /* ── Админка ── */
 let adminMode = false;
+// Проверяем сессию при загрузке
+fetch('api.php?action=admincheck&pass=').then(r=>r.json()).then(d=>{
+  if(d.ok){ setAdminMode(); }
+}).catch(()=>{});
 const ADMIN_HASH = '8e44f72b5a3e4c2d1f9b7c6a0e5d8f3b'; // md5 от пароля
 
+function setAdminMode() {
+  adminMode = true;
+  document.getElementById('admin-pass').style.display = 'none';
+  document.querySelector('.btn-admin').style.display = 'none';
+  document.getElementById('admin-status').innerHTML = '✓ Режим администратора &nbsp;<button onclick="adminLogout()" style="padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);font-size:.6rem;cursor:pointer">Выйти</button>';
+  renderIps(allIps);
+}
+function adminLogout() {
+  fetch('api.php?action=adminlogout').then(()=>{
+    adminMode = false;
+    location.reload();
+  });
+}
 function adminLogin() {
   const pass = document.getElementById('admin-pass').value;
   // Простая проверка — отправляем на сервер
@@ -468,6 +572,7 @@ function adminLogin() {
       if(d.ok) {
         adminMode = true;
         document.getElementById('admin-status').textContent = '✓ Режим администратора';
+        document.getElementById('admin-status').innerHTML = '✓ Режим администратора &nbsp;<button onclick="adminLogout()" style="padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);font-size:.6rem;cursor:pointer">Выйти</button>';
         document.getElementById('admin-status').style.color = 'var(--green)';
         document.getElementById('admin-pass').style.display = 'none';
         document.querySelector('.btn-admin').style.display = 'none';
