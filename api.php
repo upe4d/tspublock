@@ -16,6 +16,7 @@ switch($action){
   case 'export':doExport();break;
   case 'delete':doDelete();break;
   case 'admincheck':doAdminCheck();break;
+  case 'adminlogout':doAdminLogout();break;
   default:http_response_code(400);echo json_encode(['error'=>'Unknown action']);
 }
 function getCyberokIps():array{
@@ -80,13 +81,26 @@ function getStats():array{
   $fb=function(int $b):string{if($b>=1073741824)return round($b/1073741824,2).' GB';if($b>=1048576)return round($b/1048576,2).' MB';if($b>=1024)return round($b/1024,1).' KB';return $b.' B';};
   return['blocked_packets'=>$pkts,'blocked_bytes'=>$bytes,'blocked_bytes_h'=>$fb($bytes),'ip_count'=>$cnt,'last_updated'=>$last,'chain_active'=>(bool)$raw,'updated_at'=>date('d.m.Y H:i:s', time() + 10800)];
 }
+function doAdminLogout():void{
+    header('Content-Type: application/json');
+    session_start();
+    unset($_SESSION['admin']);
+    session_destroy();
+    echo json_encode(['ok'=>true]);
+}
 function doAdminCheck():void{
     header('Content-Type: application/json');
+    session_start();
     $pass = $_GET['pass'] ?? '';
-    $ok = ($pass === 'upe4d_admin_2026');
-    if($ok) session_start();
-    if($ok) $_SESSION['admin'] = true;
-    echo json_encode(['ok'=>$ok]);
+    if($pass !== '') {
+        // Логин с паролем
+        $ok = ($pass === 'upe4d_admin_2026');
+        if($ok) $_SESSION['admin'] = true;
+        echo json_encode(['ok'=>$ok]);
+    } else {
+        // Проверка существующей сессии
+        echo json_encode(['ok'=>!empty($_SESSION['admin'])]);
+    }
 }
 function isAdmin():bool{
     session_start();
@@ -137,7 +151,7 @@ function doExport():void{
   $data=getList();$ips=array_column($data['ips'],'ip');
   if($fmt==='txt'){header('Content-Type: text/plain');header('Content-Disposition: attachment; filename="tspuips.txt"');echo "# ТСПУ RST блок-лист | stats.gptru.pro/rst | ".date('Y-m-d', time()+10800)."\n# Всего: ".count($ips)."\n\n".implode("\n",$ips);}
   elseif($fmt==='mikrotik'){header('Content-Type: text/plain');header('Content-Disposition: attachment; filename="tspuips_mikrotik.rsc"');echo "# ТСПУ RST блок-лист для MikroTik\n/ip firewall address-list remove [find list=TSPUIPS]\n";foreach($ips as $ip)echo "/ip firewall address-list add list=TSPUIPS address={$ip}\n";}
-  elseif($fmt==='iptables'){header('Content-Type: text/plain');header('Content-Disposition: attachment; filename="tspuips_iptables.sh"');echo "#!/bin/bash\n# ТСПУ RST блок-лист | stats.gptru.pro/rst\niptables-save > /tmp/iptables_backup.rules\nipset destroy TSPUIPS 2>/dev/null\nipset create TSPUIPS hash:net maxelem 1024\n";foreach($ips as $ip)echo "ipset add TSPUIPS {$ip}\n";echo "iptables -N TSPUBLOCK 2>/dev/null\niptables -F TSPUBLOCK\niptables -A TSPUBLOCK -p tcp --tcp-flags RST RST -m set --match-set TSPUIPS src -j DROP\niptables -C INPUT -j TSPUBLOCK 2>/dev/null || iptables -I INPUT 1 -j TSPUBLOCK\nipset save > /etc/ipset.conf\niptables-save > /etc/iptables/rules.v4\necho \"Готово: \$(ipset list TSPUIPS | grep -c '^[0-9]') IP\"\n";}
-  elseif($fmt==='ipset'){header('Content-Type: text/plain');header('Content-Disposition: attachment; filename="tspuips.ipset"');echo "create TSPUIPS hash:net family inet hashsize 1024 maxelem 1024\n";foreach($ips as $ip)echo "add TSPUIPS {$ip}\n";}
+  elseif($fmt==='iptables'){header('Content-Type: text/plain');header('Content-Disposition: attachment; filename="tspuips_iptables.sh"');echo "#!/bin/bash\n# ТСПУ RST блок-лист | stats.gptru.pro/rst\niptables-save > /tmp/iptables_backup.rules\nipset destroy TSPUIPS 2>/dev/null\nipset create TSPUIPS hash:net maxelem 65536\n";foreach($ips as $ip)echo "ipset add TSPUIPS {$ip}\n";echo "iptables -N TSPUBLOCK 2>/dev/null\niptables -F TSPUBLOCK\niptables -A TSPUBLOCK -p tcp --tcp-flags RST RST -m set --match-set TSPUIPS src -j DROP\niptables -C INPUT -j TSPUBLOCK 2>/dev/null || iptables -I INPUT 1 -j TSPUBLOCK\nipset save > /etc/ipset.conf\niptables-save > /etc/iptables/rules.v4\necho \"Готово: \$(ipset list TSPUIPS | grep -c '^[0-9]') IP\"\n";}
+  elseif($fmt==='ipset'){header('Content-Type: text/plain');header('Content-Disposition: attachment; filename="tspuips.ipset"');echo "create TSPUIPS hash:net family inet hashsize 4096 maxelem 65536\n";foreach($ips as $ip)echo "add TSPUIPS {$ip}\n";}
   else{header('Content-Type: application/json');echo json_encode(['error'=>'Форматы: txt, mikrotik, iptables, ipset']);}
 }
