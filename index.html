@@ -135,15 +135,42 @@ footer{text-align:center;padding:22px;color:var(--muted2);font-size:.63rem;borde
 
 <section class="hero">
   <div class="hero-badge"><span class="blink"></span> Live · RST Block List</div>
-  <h1>ТСПУ шлёт <em>RST пакеты</em><br>— мы их блокируем</h1>
-  <p class="hero-sub">ТСПУ вклинивается в соединение между клиентом и MTProxy сервером и отправляет TCP RST пакеты со своих реальных IP — сервер думает что клиент отключился. Здесь — живой список IP адресов DPI оборудования и инструкция как заблокировать их на своём сервере.</p>
-  <div class="stat-row">
-    <div class="stat"><div class="lbl">IP в блок-листе</div><div class="val v-red" id="s-count">...</div><div class="sub">уникальных адресов</div></div>
-    <div class="stat"><div class="lbl">RST задропано</div><div class="val v-green" id="s-pkts">...</div><div class="sub">пакетов всего</div></div>
-    <div class="stat"><div class="lbl">Трафик сброшен</div><div class="val v-yellow" id="s-bytes">...</div><div class="sub">от ТСПУ</div></div>
-    <div class="stat"><div class="lbl">Обновление</div><div class="val v-blue" id="s-upd">...</div><div class="sub">CyberOK раз в сутки · автосбор раз в сутки</div></div>
+  <h1>Блокировка ТСПУ<br>для <em>MTProxy серверов</em></h1>
+  <p class="hero-sub">Проверенные списки IP DPI-оборудования и подсетей госорганов РФ для защиты MTProxy серверов от TCP RST инжекции. Исследование механизма работы ТСПУ и результаты анализа трафика.</p>
+
+  <!-- Предупреждение для нетехов -->
+  <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:9px;padding:9px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:16px;max-width:680px;">
+    <span style="color:#92400e;font-size:1em;flex-shrink:0">⚠</span>
+    <span style="font-size:.74rem;color:#92400e;line-height:1.6;"><strong>Для технических специалистов</strong> — администраторов MTProxy серверов. Ищете прокси для Telegram? — <a href="https://gptru.pro/dpi/" target="_blank" style="color:#92400e;text-decoration:underline;">gptru.pro/dpi/</a></span>
+  </div>
+
+  <!-- Навигация -->
+  <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+    <a href="#lists" class="btn btn-blue">Блок-листы</a>
+    <a href="#install" class="btn">Установка</a>
+    <a href="#analysis" class="btn">Анализ автосбора</a>
+    <a href="#howtspu" class="btn">Как работает ТСПУ</a>
+    <a href="https://github.com/upe4d/tspublock" target="_blank" class="btn"><i class="bi bi-github"></i> GitHub</a>
+    <a href="https://t.me/telemtrs" target="_blank" class="btn"><i class="bi bi-telegram"></i> @telemtrs</a>
+  </div>
+
+  <!-- Честные статы -->
+  <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat"><div class="lbl">CyberOK Skipa</div><div class="val v-green" id="s-cyberok">...</div><div class="sub">задокументированных сканеров ТСПУ</div></div>
+    <div class="stat"><div class="lbl">GOVIPS</div><div class="val v-blue" id="s-govips">1145</div><div class="sub">подсетей госорганов РФ</div></div>
+    <div class="stat"><div class="lbl">Обновление</div><div class="val v-blue" id="s-upd">03:00</div><div class="sub">ежедневно · CyberOK и GOVIPS</div></div>
   </div>
 </section>
+
+<!-- Разделитель: рабочее vs эксперимент -->
+<div style="border:1px solid #f59e0b;border-radius:11px;padding:14px 18px;margin-bottom:16px;background:#fffbeb;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+    <span style="font-size:.67rem;background:#fef3c7;border:1px dashed #f59e0b;color:#92400e;padding:2px 9px;border-radius:6px;font-weight:700;font-family:'Unbounded',sans-serif;">ЭКСПЕРИМЕНТ</span>
+    <span style="font-size:.75rem;font-weight:700;color:#92400e;font-family:'Unbounded',sans-serif;">Всё что ниже — исследование, а не готовое решение</span>
+  </div>
+  <p style="font-size:.74rem;color:#92400e;line-height:1.7;margin-bottom:8px;">Автосбор RST, анализ трафика, теория блокировки по IP — это эксперименты по изучению работы ТСПУ. Теория не подтвердилась: RST инжектируется с оригинальными IP клиентов, блэклист таких адресов бессмысленен. <strong>Для реальной защиты используйте CyberOK и GOVIPS</strong> — ссылки выше.</p>
+  <p style="font-size:.74rem;color:#92400e;line-height:1.7;">Если у вас есть идеи по выявлению реального оборудования ТСПУ, методологии сбора или анализу пакетов — ждём вас на <a href="https://github.com/upe4d/tspublock" target="_blank" style="color:#92400e;font-weight:700;text-decoration:underline;">GitHub</a>. С уважением относимся к любым предложениям и критике.</p>
+</div>
 
 <div class="main-grid">
 <div>
@@ -457,6 +484,7 @@ function renderIps(ips) {
   const auto    = ips.filter(i => i.source !== 'cyberok');
 
   document.getElementById('ck-meta').textContent = cyberok.length + ' IP · раз в сутки';
+  if(document.getElementById('s-cyberok')) document.getElementById('s-cyberok').textContent = cyberok.length;
   document.getElementById('au-meta').textContent = auto.length + ' IP · сбор остановлен';
 
   document.getElementById('ck-list').innerHTML = cyberok.length
